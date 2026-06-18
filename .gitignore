@@ -1,0 +1,9 @@
+# 本地数据库（运行 day04_sql_init.py 会重新生成）
+practice.db
+
+# Python 缓存
+__pycache__/
+*.pyc
+
+# PyCharm
+.idea/
