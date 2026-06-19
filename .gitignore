@@ -7,3 +7,6 @@ __pycache__/
 
 # PyCharm
 .idea/
+
+# 密钥（切勿提交）
+.env
