@@ -1,5 +1,5 @@
 """
-Day6: FastAPI + SQLite
+Day6-7: FastAPI + SQLite（完整 CRUD）
 
 先确保有数据库（没有就运行一次 day04_sql_init.py），再启动：
 
@@ -7,6 +7,13 @@ Day6: FastAPI + SQLite
 
 然后访问：
     http://127.0.0.1:8000/docs
+
+接口一览：
+    GET    /students          查全部
+    GET    /students/{id}     查一个
+    POST   /students          新增
+    PUT    /students/{id}     修改
+    DELETE /students/{id}     删除
 """
 
 import os
@@ -32,6 +39,12 @@ def get_db():
 
 
 class StudentCreate(BaseModel):
+    name: str
+    age: int
+    city: str
+
+
+class StudentUpdate(BaseModel):
     name: str
     age: int
     city: str
@@ -86,3 +99,71 @@ def create_student(student: StudentCreate):
     ).fetchone()
     conn.close()
     return dict(row)
+
+
+def _get_student_or_404(conn, student_id: int):
+    row = conn.execute(
+        "SELECT id, name, age, city FROM students WHERE id = ?",
+        (student_id,),
+    ).fetchone()
+    if row is None:
+        raise HTTPException(status_code=404, detail="学生不存在")
+    return row
+
+
+@app.put("/students/{student_id}", response_model=StudentOut)
+def update_student(student_id: int, student: StudentUpdate):
+    conn = get_db()
+    _get_student_or_404(conn, student_id)
+    conn.execute(
+        "UPDATE students SET name = ?, age = ?, city = ? WHERE id = ?",
+        (student.name, student.age, student.city, student_id),
+    )
+    conn.commit()
+    row = _get_student_or_404(conn, student_id)
+    conn.close()
+    return dict(row)
+
+
+@app.delete("/students/{student_id}")
+def delete_student(student_id: int):
+    conn = get_db()
+    _get_student_or_404(conn, student_id)
+    conn.execute("DELETE FROM students WHERE id = ?", (student_id,))
+    conn.commit()
+    conn.close()
+    return {"msg": f"已删除学生 id={student_id}"}
+
+
+def _get_student_or_404(conn, student_id: int):
+    row = conn.execute(
+        "SELECT id, name, age, city FROM students WHERE id = ?",
+        (student_id,),
+    ).fetchone()
+    if row is None:
+        raise HTTPException(status_code=404, detail="学生不存在")
+    return row
+
+
+@app.put("/students/{student_id}", response_model=StudentOut)
+def update_student(student_id: int, student: StudentUpdate):
+    conn = get_db()
+    _get_student_or_404(conn, student_id)
+    conn.execute(
+        "UPDATE students SET name = ?, age = ?, city = ? WHERE id = ?",
+        (student.name, student.age, student.city, student_id),
+    )
+    conn.commit()
+    row = _get_student_or_404(conn, student_id)
+    conn.close()
+    return dict(row)
+
+
+@app.delete("/students/{student_id}")
+def delete_student(student_id: int):
+    conn = get_db()
+    _get_student_or_404(conn, student_id)
+    conn.execute("DELETE FROM students WHERE id = ?", (student_id,))
+    conn.commit()
+    conn.close()
+    return {"msg": f"已删除学生 id={student_id}"}
