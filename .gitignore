@@ -10,3 +10,6 @@ __pycache__/
 
 # 密钥（切勿提交）
 .env
+
+# RAG 向量库（本地生成）
+chroma_db/
